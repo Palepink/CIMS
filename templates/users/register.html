@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block content %}
+    <body class="bg-primary">
+    <div class="container-fluid">
+        <div class="row justify-content-center">
+            <div class="login-content">
+                <div class="login-form">
+                    <h4>Sign Up</h4>
+                    <form class="form-horizontal" role="form" action="" method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>User Name</label>
+                            {{ register_form.username }}
+                            <p>{{ register_form.errors.username }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            {{ register_form.password1 }}
+                        </div>
+                        <div class="form-group">
+                            <label>Password confirm</label>
+                            {{ register_form.password2 }}
+                            <p>{{ register_form.errors.password2 }}</p>
+                        </div>
+                        <div class="form-group">
+                            {{ register_form.captcha }}
+                            <label for="" id="show"></label>
+                            <p>{{ register_form.errors.captcha }}</p>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox"> Agree the terms and policy
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-flat m-b-30 m-t-30">Register</button>
+                        <div class="register-link m-t-15 text-center">
+                            <p>Already have account ? <a href="{% url 'users:login' %}"> Sign in</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+    <script>
+        $(function () {
+            //设置鼠标放在验证码上，更换鼠标形状
+            $('.captcha').css('cursor', 'pointer')
+            $('.captcha').click(function () {
+                showNewCode()
+            })
+        })
+
+        function showNewCode() {
+            oldValue = false
+            seconds = 15
+            timeInterval = null
+            //请求验证码地址，获取最新的验证码图片以及验证码内容
+            $.getJSON('/captcha/refresh/', function (data) {
+                console.log(data)
+                // attribute属性，更换验证码的值
+                $('.captcha').attr('src', data['image_url'])
+                // 更新验证码的值
+                $('#id_captcha_0').val(data['key'])
+                timeInterval = setInterval(function () {
+                    seconds--
+                    $('#show').text(seconds + 's')
+                    if (seconds < 0) {
+                        clearInterval(timeInterval)
+                        oldValue = true
+                        $('#show').text('')
+                    }
+                }, 1000)
+            })
+        }
+
+        $('#id_captcha_1').click(function () {
+            if (oldValue == true) {
+                alert('验证码已过期')
+                showNewCode()
+            }
+        })
+    </script>
+{% endblock %}
